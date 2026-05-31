@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laga Pancasila: Gen Z Championship - Game Interaktif PKn Kelas VII</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .heading-font {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .grid-bg {
+      background-color: #0b0f19;
+      background-image: 
+        linear-gradient(rgba(18, 24, 38, 0.5) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(18, 24, 38, 0.5) 2px, transparent 2px);
+      background-size: 40px 40px;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #111827;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4b5563;
+    }
+  </style>
+</head>
+<body class="grid-bg text-gray-100 min-h-screen flex flex-col justify-between overflow-x-hidden select-none">
+
+  <!-- SOUND GENERATOR (Web Audio API) -->
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      const now = audioCtx.currentTime;
+      
+      if (type === 'correct') {
+        // Arpeggio sound for correct answer
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+        osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+        osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc.start(now);
+        osc.stop(now + 0.5);
+      } else if (type === 'wrong') {
+        // Buzz sound for wrong answer
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.4);
+        gainNode.gain.setValueAtTime(0.3, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      } else if (type === 'buzzer') {
+        // High alert buzzer
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.setValueAtTime(440, now + 0.15);
+        osc.frequency.setValueAtTime(880, now + 0.3);
+        gainNode.gain.setValueAtTime(0.4, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc.start(now);
+        osc.stop(now + 0.6);
+      } else if (type === 'click') {
+        // Retro blip
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        gainNode.gain.setValueAtTime(0.15, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === 'victory') {
+        // Fanfare
+        osc.type = 'triangle';
+        const notes = [523, 587, 659, 698, 784, 880, 988, 1047];
+        notes.forEach((freq, idx) => {
+          const oscSeq = audioCtx.createOscillator();
+          const gainSeq = audioCtx.createGain();
+          oscSeq.connect(gainSeq);
+          gainSeq.connect(audioCtx.destination);
+          oscSeq.type = 'triangle';
+          oscSeq.frequency.setValueAtTime(freq, now + idx * 0.1);
+          gainSeq.gain.setValueAtTime(0.25, now + idx * 0.1);
+          gainSeq.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.2);
+          oscSeq.start(now + idx * 0.1);
+          oscSeq.stop(now + idx * 0.1 + 0.2);
+        });
+      }
+    }
+  </script>
+
+  <!-- NAVBAR HEADER -->
+  <header class="bg-gray-900/80 border-b border-gray-800 backdrop-blur-md px-6 py-4 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-tr from-red-600 to-amber-500 p-2.5 rounded-xl shadow-lg shadow-red-900/30">
+          <i data-lucide="trophy" class="w-8 h-8 text-white"></i>
+        </div>
+        <div>
+          <h1 class="heading-font text-2xl font-extrabold tracking-wide bg-gradient-to-r from-red-500 via-amber-400 to-emerald-400 bg-clip-text text-transparent">
+            LAGA PANCASILA
+          </h1>
+          <p class="text-xs text-gray-400 font-semibold tracking-wider">CHAMPIONSHIP ERA GEN Z • KELAS 7 SMP</p>
+        </div>
+      </div>
+
+      <!-- Live Soundboard & Control Hub -->
+      <div class="flex items-center gap-3 bg-gray-950/80 p-2 rounded-xl border border-gray-800">
+        <button onclick="playSound('correct')" class="p-2 hover:bg-emerald-950/50 rounded-lg text-emerald-400 border border-emerald-900/30 flex items-center gap-1.5 transition text-sm">
+          <i data-lucide="check-circle" class="w-4 h-4"></i> Benar
+        </button>
+        <button onclick="playSound('wrong')" class="p-2 hover:bg-rose-950/50 rounded-lg text-rose-400 border border-rose-900/30 flex items-center gap-1.5 transition text-sm">
+          <i data-lucide="x-circle" class="w-4 h-4"></i> Salah
+        </button>
+        <button onclick="playSound('buzzer')" class="p-2 hover:bg-amber-950/50 rounded-lg text-amber-400 border border-amber-900/30 flex items-center gap-1.5 transition text-sm">
+          <i data-lucide="bell" class="w-4 h-4"></i> Bel
+        </button>
+        <button onclick="resetGame()" class="p-2 hover:bg-gray-800 rounded-lg text-gray-300 border border-gray-700 flex items-center gap-1.5 transition text-sm" title="Ulang Game">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+
+    <!-- SETUP SCREEN -->
+    <div id="setup-screen" class="bg-gray-900/90 border border-gray-800 rounded-3xl p-8 max-w-2xl mx-auto my-auto w-full shadow-2xl text-center">
+      <div class="inline-block bg-red-950/50 text-red-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest border border-red-900/40 mb-4 heading-font">
+        Game Papan Interaktif
+      </div>
+      <h2 class="heading-font text-3xl font-bold mb-2">Pilih Formasi Tim</h2>
+      <p class="text-gray-400 mb-8 text-sm">Bagi kelas menjadi beberapa kelompok kompetisi. Setiap kelompok akan maju bergantian atau menepuk bel di papan tulis digital.</p>
+      
+      <!-- Team Count Selector -->
+      <div class="grid grid-cols-3 gap-4 mb-8">
+        <button onclick="setTeamCount(2)" id="btn-teams-2" class="p-4 rounded-2xl bg-gray-950 border-2 border-red-500 text-white font-bold text-lg hover:bg-gray-800/50 transition">
+          <span class="block text-2xl mb-1">2</span> Tim
+        </button>
+        <button onclick="setTeamCount(3)" id="btn-teams-3" class="p-4 rounded-2xl bg-gray-950 border border-gray-800 text-gray-400 font-bold text-lg hover:bg-gray-800/50 transition">
+          <span class="block text-2xl mb-1">3</span> Tim
+        </button>
+        <button onclick="setTeamCount(4)" id="btn-teams-4" class="p-4 rounded-2xl bg-gray-950 border border-gray-800 text-gray-400 font-bold text-lg hover:bg-gray-800/50 transition">
+          <span class="block text-2xl mb-1">4</span> Tim
+        </button>
+      </div>
+
+      <!-- Name Customizer -->
+      <div id="team-names-container" class="space-y-4 mb-8 text-left">
+        <!-- Will be dynamically updated by JS -->
+      </div>
+
+      <button onclick="startGame()" class="w-full py-4 bg-gradient-to-r from-red-600 via-amber-500 to-emerald-600 rounded-2xl text-white font-extrabold text-lg shadow-lg hover:brightness-110 active:scale-[0.98] transition">
+        MULAI LAGA SEKARANG ⚡
+      </button>
+    </div>
+
+    <!-- MAIN GAME SCREEN (Hidden Initially) -->
+    <div id="game-screen" class="hidden flex-col gap-6">
+      
+      <!-- MODE TOGGLES (Tabs) -->
+      <div class="flex flex-wrap justify-between items-center gap-4 bg-gray-950 p-2.5 rounded-2xl border border-gray-800">
+        <div class="flex gap-2">
+          <button onclick="switchView('jeopardy')" id="tab-jeopardy" class="px-5 py-3 rounded-xl bg-red-600 text-white font-bold text-sm flex items-center gap-2 transition shadow-lg shadow-red-900/20">
+            <i data-lucide="grid" class="w-4 h-4"></i> Papan Cerdas Cermat
+          </button>
+          <button onclick="switchView('buzzer')" id="tab-buzzer" class="px-5 py-3 rounded-xl bg-gray-900 text-gray-400 font-semibold text-sm flex items-center gap-2 hover:bg-gray-800 transition">
+            <i data-lucide="zap" class="w-4 h-4"></i> Duel Buzzer Kelas
+          </button>
+          <button onclick="switchView('wheel')" id="tab-wheel" class="px-5 py-3 rounded-xl bg-gray-900 text-gray-400 font-semibold text-sm flex items-center gap-2 hover:bg-gray-800 transition">
+            <i data-lucide="disc" class="w-4 h-4"></i> Roda Karakter Gen Z
+          </button>
+        </div>
+        <div class="px-4 py-2 bg-gray-900 rounded-lg border border-gray-800 flex items-center gap-2">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+          <p class="text-xs text-gray-300 font-semibold">Grup Aktif: <span id="active-team-banner" class="text-amber-400 font-extrabold">TIM A</span></p>
+        </div>
+      </div>
+
+      <!-- VIEW 1: JEOPARDY BOARD -->
+      <div id="view-jeopardy" class="space-y-6">
+        <div class="bg-gray-900/60 p-4 rounded-2xl border border-gray-800 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-lg text-white">Papan Jeopardy Pancasila</h3>
+            <p class="text-xs text-gray-400">Pilih kotak berdasarkan kategori & poin. Makin tinggi poin, makin seru tantangannya!</p>
+          </div>
+          <div class="text-xs text-amber-400 bg-amber-950/40 border border-amber-900/40 p-2.5 rounded-lg font-semibold max-w-sm">
+            💡 <strong>Instruksi Papan:</strong> Siswa menyentuh salah satu kartu skor. Jawab dengan benar untuk mendapat poin, salah akan mengurangi poin tim!
+          </div>
+        </div>
+
+        <!-- Jeopardy Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="jeopardy-grid">
+          <!-- Categories with questions will be built by JS -->
+        </div>
+      </div>
+
+      <!-- VIEW 2: BUZZER DUEL -->
+      <div id="view-buzzer" class="hidden space-y-6">
+        <div class="bg-gray-900/60 p-5 rounded-2xl border border-gray-800 text-center max-w-3xl mx-auto space-y-4">
+          <h3 class="font-bold text-xl text-white heading-font">⚡ Arena Adu Cepat (Duel Buzzer)</h3>
+          <p class="text-sm text-gray-400">Setiap ronde memiliki batas berpikir 10 detik. Setelah tombol bel ditepuk, tim memiliki waktu 10 detik untuk menjawab secara lisan!</p>
+          
+          <!-- Interactive Question Card -->
+          <div class="p-6 bg-gray-950 border border-gray-800 rounded-2xl text-left space-y-4 relative overflow-hidden">
+            <div class="flex justify-between items-center">
+              <span id="buzzer-question-category" class="text-xs font-bold text-amber-400 uppercase tracking-widest">Pertanyaan Cepat PKn</span>
+              <!-- Circular Progress/Countdown timer -->
+              <div class="flex items-center gap-2 bg-red-950/40 border border-red-900/60 px-3.5 py-1.5 rounded-full">
+                <i data-lucide="timer" class="w-4 h-4 text-red-500 animate-pulse"></i>
+                <span id="buzzer-timer" class="font-mono text-sm font-extrabold text-red-400">10s</span>
+              </div>
+            </div>
+
+            <p id="buzzer-question-text" class="text-base md:text-lg font-extrabold text-gray-100 leading-relaxed min-h-[60px] flex items-center">
+              Tekan tombol di bawah ini untuk memulai atau memunculkan pertanyaan acak berikutnya!
+            </p>
+
+            <div class="flex flex-wrap gap-2 pt-2">
+              <button onclick="triggerBuzzerQuestion()" class="px-5 py-2.5 bg-gradient-to-r from-red-600 to-amber-500 text-white font-bold text-xs rounded-xl hover:brightness-110 active:scale-[0.98] transition flex items-center gap-1.5">
+                <i data-lucide="play-circle" class="w-4 h-4"></i> Rilis Soal Baru (10 Detik)
+              </button>
+              <button onclick="resetBuzzer()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs rounded-xl transition flex items-center gap-1.5">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Bersihkan & Reset Bel
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Status -->
+          <div class="flex justify-between items-center bg-gray-950/80 p-3 rounded-xl border border-gray-800 text-sm">
+            <div>
+              <span class="text-xs font-semibold text-gray-400 uppercase">STATUS BAR:</span>
+              <span id="buzzer-status" class="text-xs font-extrabold text-emerald-400 ml-2">SIAP BERTARUNG!</span>
+            </div>
+            
+            <!-- Quick Scoring Controls for Buzzer -->
+            <div id="buzzer-score-controls" class="hidden items-center gap-2 animate-fade-in">
+              <span class="text-xs text-gray-400 font-bold" id="buzzer-target-team-text">Tim Menjawab:</span>
+              <button onclick="awardBuzzerPoints(true)" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition">
+                Benar (+100)
+              </button>
+              <button onclick="awardBuzzerPoints(false)" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition">
+                Salah (-50)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Buzzers Area -->
+        <div id="buzzers-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto h-[350px]">
+          <!-- Dynamic Team Buzzers -->
+        </div>
+      </div>
+
+      <!-- VIEW 3: SPIN THE WHEEL -->
+      <div id="view-wheel" class="hidden space-y-6 max-w-4xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-gray-900/50 p-8 rounded-3xl border border-gray-800">
+          
+          <!-- Wheel Canvas -->
+          <div class="relative flex flex-col items-center justify-center">
+            <!-- Pin Pointer -->
+            <div class="absolute -top-3 z-10 w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[25px] border-t-amber-400 filter drop-shadow"></div>
+            
+            <div class="w-72 h-72 rounded-full border-8 border-gray-800 shadow-2xl relative overflow-hidden flex items-center justify-center bg-gray-950">
+              <canvas id="wheel-canvas" width="280" height="280" class="transition-transform duration-500 ease-out"></canvas>
+              <!-- Center Button -->
+              <button onclick="spinWheel()" id="spin-btn" class="absolute w-16 h-16 bg-white hover:scale-105 active:scale-95 text-gray-950 font-extrabold rounded-full shadow-xl flex items-center justify-center text-sm border-4 border-gray-800 z-10 heading-font">
+                SPIN!
+              </button>
+            </div>
+          </div>
+
+          <!-- Wheel Info -->
+          <div class="space-y-4">
+            <span class="px-3 py-1 bg-emerald-950 text-emerald-400 border border-emerald-900 text-xs font-bold rounded-full uppercase tracking-wider">
+              Tantangan Karakter Gen Z
+            </span>
+            <h3 class="heading-font text-2xl font-bold">Roda Karakter Pancasila</h3>
+            <p class="text-sm text-gray-400">Putar roda untuk mendapatkan skenario aktualisasi Pancasila di era digital. Tim yang aktif harus memberikan pendapat atau solusi dari skenario tersebut untuk mendapatkan <strong class="text-amber-400">bonus 300 poin</strong>!</p>
+            
+            <div id="wheel-result-box" class="hidden p-4 rounded-xl bg-gray-950 border border-gray-800 space-y-2">
+              <div class="text-xs text-amber-400 font-extrabold tracking-wider uppercase">🔴 Hasil Putaran:</div>
+              <h4 id="wheel-result-title" class="font-bold text-lg text-white"></h4>
+              <p id="wheel-result-scenario" class="text-xs text-gray-400 italic"></p>
+              
+              <div class="flex gap-2 pt-2">
+                <button onclick="rewardWheelPoints(true)" class="flex-1 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-lg transition">
+                  Sukses (+300)
+                </button>
+                <button onclick="rewardWheelPoints(false)" class="flex-1 py-2 bg-rose-700 hover:bg-rose-600 text-white font-bold text-xs rounded-lg transition">
+                  Gagal (0)
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- INTRO/INSTRUCTION AREA -->
+    <div id="intro-area" class="bg-gray-900/30 border border-gray-800/60 rounded-2xl p-5 max-w-4xl mx-auto w-full">
+      <h4 class="font-bold text-sm text-gray-300 flex items-center gap-1.5 mb-2">
+        <i data-lucide="info" class="w-4 h-4 text-amber-500"></i> Informasi & Konsep Game
+      </h4>
+      <p class="text-xs text-gray-400 leading-relaxed">
+        Game interaktif ini disusun berdasarkan modul materi PKn Kelas VII (Kurikulum Merdeka). Konten mencakup sejarah pembentukan BPUPKI, Sidang Pancasila, pembentukan PPKI, hingga Aktualisasi Karakter Bangsa Era Gen Z (Saring digital, anti-cyberbullying, integritas, dan gotong royong). Didesain ramah sentuhan (touch-friendly) untuk memudahkan pengoperasian langsung di papan digital interaktif kelas.
+      </p>
+    </div>
+
+  </main>
+
+  <!-- SCOREBOARD BAR (Always Pinned to Bottom when Gaming) -->
+  <footer id="scoreboard" class="hidden bg-gray-950 border-t border-gray-800 p-4 sticky bottom-0 z-30 shadow-[0_-8px_24px_rgba(0,0,0,0.6)]">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-2">
+        <i data-lucide="award" class="w-5 h-5 text-amber-400"></i>
+        <span class="text-sm font-extrabold text-white heading-font uppercase">Papan Skor Kelompok:</span>
+      </div>
+
+      <!-- Dynamic Teams List -->
+      <div id="scoreboard-teams" class="flex flex-wrap justify-center gap-4">
+        <!-- Built by JS -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- QUESTION MODAL -->
+  <div id="question-modal" class="hidden fixed inset-0 z-50 bg-gray-950/90 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-800 max-w-3xl w-full rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="p-6 border-b border-gray-800 bg-gray-950/50 flex justify-between items-center">
+        <div>
+          <span id="modal-category" class="text-xs font-bold text-amber-400 uppercase tracking-widest">Kategori</span>
+          <h4 id="modal-points" class="heading-font text-lg font-black text-white">NILAI: 100 POIN</h4>
+        </div>
+        <!-- Live Countdown Timer -->
+        <div class="flex items-center gap-2 bg-red-950/50 border border-red-900 px-3 py-1.5 rounded-xl">
+          <i data-lucide="timer" class="w-4 h-4 text-red-500 animate-pulse"></i>
+          <span id="modal-timer" class="font-mono text-sm font-extrabold text-red-400">30s</span>
+        </div>
+      </div>
+
+      <!-- Modal Body (Scrollable if needed) -->
+      <div class="p-6 space-y-6 overflow-y-auto flex-grow">
+        <p id="modal-question-text" class="text-lg md:text-xl font-bold leading-relaxed text-gray-100">
+          Pertanyaan sedang dimuat...
+        </p>
+
+        <!-- Options Container -->
+        <div id="modal-options" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Dynamic Options buttons will be injected here -->
+        </div>
+
+        <!-- Explanation Container (Hidden until Answered) -->
+        <div id="modal-explanation-box" class="hidden p-4 rounded-2xl bg-gray-950 border border-emerald-900/30 text-xs text-gray-400 leading-relaxed">
+          <div class="font-extrabold text-emerald-400 mb-1 flex items-center gap-1">
+            <i data-lucide="info" class="w-4 h-4"></i> PEMBAHASAN HISTORIS:
+          </div>
+          <span id="modal-explanation-text">Penjelasan materi...</span>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-6 border-t border-gray-800 bg-gray-950/50 flex flex-wrap gap-3 justify-between items-center">
+        <!-- Manual override controls for teacher -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-500 font-semibold">Koreksi Manual:</span>
+          <button onclick="overridePoint(true)" class="px-3 py-1.5 bg-emerald-950 text-emerald-400 border border-emerald-900 rounded-lg text-xs font-bold hover:bg-emerald-900/50">
+            Tim Benar (+Poin)
+          </button>
+          <button onclick="overridePoint(false)" class="px-3 py-1.5 bg-rose-950 text-rose-400 border border-rose-900 rounded-lg text-xs font-bold hover:bg-rose-900/50">
+            Tim Salah (-Poin)
+          </button>
+        </div>
+
+        <button onclick="closeQuestionModal()" class="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white text-sm font-extrabold rounded-xl transition">
+          Selesai & Kembali
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VICTORY MODAL -->
+  <div id="victory-modal" class="hidden fixed inset-0 z-50 bg-gray-950/95 flex items-center justify-center p-4">
+    <div class="bg-gray-900 border-2 border-amber-500 max-w-md w-full rounded-3xl p-8 text-center space-y-6 shadow-2xl">
+      <div class="inline-block bg-amber-950/50 text-amber-400 p-4 rounded-full border border-amber-900">
+        <i data-lucide="crown" class="w-16 h-16"></i>
+      </div>
+      <h2 class="heading-font text-3xl font-extrabold text-white">LAGA SELESAI!</h2>
+      <p class="text-gray-400 text-sm">Selamat kepada peraih juara dalam kejuaraan sejarah Pancasila ini!</p>
+      
+      <div class="p-6 bg-gray-950 rounded-2xl border border-gray-800">
+        <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">JUARA 1</div>
+        <div id="victory-team-name" class="text-2xl font-extrabold text-amber-400 mb-1">TIM GARUDA</div>
+        <div id="victory-team-score" class="text-sm text-gray-300">Total Skor: 1200 Poin</div>
+      </div>
+
+      <button onclick="resetGame()" class="w-full py-3 bg-gradient-to-r from-red-600 to-amber-500 rounded-xl text-white font-bold transition">
+        Main Lagi
+      </button>
+    </div>
+  </div>
+
+  <!-- GAME DATA & SCRIPT LOGIC -->
+  <script>
+    // 1. GAME DATA (Compiled directly from the uploaded document)
+    const jeopardyData = [
+      {
+        category: "Masa Sejarah & BPUPKI",
+        questions: [
+          {
+            id: "cat1-100",
+            points: 100,
+            question: "Apa bukti sejarah awal di Nusantara yang menunjukkan berkembangnya nilai religius (Sila 1) berdasarkan benda peninggalan purbakala?",
+            options: [
+              "Prasasti batu di Kerajaan Tarumanegara",
+              "Penemuan nekara dan gong perunggu untuk upacara",
+              "Pembangunan Candi Borobudur",
+              "Perlawanan mengusir penjajah Portugis"
+            ],
+            answer: 1,
+            explanation: "Penemuan nekara dan gong perunggu dari Sumatra hingga Pulau Alor digunakan sebagai sarana upacara, menunjukkan adanya nilai/vibes religius (Sila 1) sejak zaman prasejarah."
+          },
+          {
+            id: "cat1-200",
+            points: 200,
+            question: "Siapa Perdana Menteri Jepang yang memberikan janji kemerdekaan kepada Indonesia pada tanggal 7 September 1944?",
+            options: [
+              "Jenderal Kuniaki Koiso",
+              "Jenderal Terauchi",
+              "Ichibangase Yosio",
+              "Tokonomi Tokuzi"
+            ],
+            answer: 0,
+            explanation: "PM Kuniaki Koiso memberikan janji kemerdekaan di depan Parlemen Jepang demi mendapatkan simpati dan bantuan militer dari rakyat Indonesia."
+          },
+          {
+            id: "cat1-300",
+            points: 300,
+            question: "Berapa jumlah total keterwakilan tokoh perempuan dalam keanggotaan BPUPKI?",
+            options: [
+              "1 orang",
+              "2 orang",
+              "5 orang",
+              "Tidak ada keterwakilan perempuan"
+            ],
+            answer: 1,
+            explanation: "Dari total anggota BPUPKI, terdapat 2 orang tokoh perempuan yang dilibatkan. Hal ini menunjukkan awal pengakuan kesetaraan gender sejak penyusunan negara."
+          },
+          {
+            id: "cat1-400",
+            points: 400,
+            question: "Kapan BPUPKI secara resmi didirikan melalui Maklumat Gunseikan oleh Pemerintah Pendudukan Jepang?",
+            options: [
+              "1 Maret 1945",
+              "29 Mei 1945",
+              "29 April 1945",
+              "17 Agustus 1945"
+            ],
+            answer: 2,
+            explanation: "Meskipun direncanakan pada 1 Maret 1945, BPUPKI secara resmi didirikan pada 29 April 1945 melalui Maklumat Gunseikan dengan nama Dokuritsu Junbi Cosakai."
+          },
+          {
+            id: "cat1-500",
+            points: 500,
+            question: "Siapakah perwakilan pihak Jepang yang menjabat sebagai Wakil Ketua (Fuku Kaico) dalam struktur organisasi BPUPKI?",
+            options: [
+              "Tokonomi Tokuzi",
+              "dr. K.R.T. Radjiman Wedyodiningrat",
+              "Ichibangase Yosio",
+              "Miyano Syoozo"
+            ],
+            answer: 2,
+            explanation: "Struktur pimpinan BPUPKI terdiri dari Ketua dr. Radjiman Wedyodiningrat, serta dua Wakil Ketua yaitu R.P. Soeroso (Indonesia) dan Ichibangase Yosio (Jepang)."
+          }
+        ]
+      },
+      {
+        category: "Sidang & Perumusan",
+        questions: [
+          {
+            id: "cat2-100",
+            points: 100,
+            question: "Di gedung manakah Sidang Pertama BPUPKI dilaksanakan?",
+            options: [
+              "Gedung Pancasila",
+              "Gedung Chuo Sangi In",
+              "Istana Merdeka",
+              "Gedung Kalijati"
+            ],
+            answer: 1,
+            explanation: "Sidang pertama BPUPKI (29 Mei – 1 Juni 1945) dilaksanakan di Gedung Chuo Sangi In yang berlokasi di Jakarta."
+          },
+          {
+            id: "cat2-200",
+            points: 200,
+            question: "Siapakah tokoh bangsa yang mengusulkan lima prinsip dasar negara: Peri Kebangsaan, Kemanusiaan, Ketuhanan, Kerakyatan, dan Kesejahteraan Sosial?",
+            options: [
+              "Prof. Dr. Soepomo",
+              "Ir. Soekarno",
+              "Mr. Muhammad Yamin",
+              "Drs. Mohammad Hatta"
+            ],
+            answer: 2,
+            explanation: "Asas tersebut disampaikan oleh Mr. Muhammad Yamin pada hari pertama sidang, yaitu Selasa, 29 Mei 1945."
+          },
+          {
+            id: "cat2-300",
+            points: 300,
+            question: "Ir. Soekarno memperkenalkan istilah Pancasila dalam pidatonya pada tanggal 1 Juni 1945. Sila ke-5 yang ia usulkan berbunyi...",
+            options: [
+              "Kesejahteraan Sosial",
+              "Ketuhanan yang berkebudayaan",
+              "Internasionalisme atau Peri Kemanusiaan",
+              "Mufakat atau Demokrasi"
+            ],
+            answer: 1,
+            explanation: "Rumusan lima prinsip Bung Karno adalah: 1) Kebangsaan Indonesia, 2) Internasionalisme, 3) Mufakat/Demokrasi, 4) Kesejahteraan Sosial, dan 5) Ketuhanan yang berkebudayaan."
+          },
+          {
+            id: "cat2-400",
+            points: 400,
+            question: "Berapa usulan rumusan asas dasar negara yang dikemukakan oleh Prof. Dr. Soepomo pada sidang tanggal 31 Mei 1945?",
+            options: [
+              "Persatuan, Kekeluargaan, Keseimbangan Lahir & Batin, Musyawarah, Keadilan Rakyat",
+              "Kebangsaan, Kemanusiaan, Ketuhanan, Kerakyatan, Kesejahteraan Rakyat",
+              "Ketuhanan dengan kewajiban menjalankan syariat Islam",
+              "Persatuan, Keadilan Sosial, Demokrasi, Kedaulatan, Kemanusiaan"
+            ],
+            answer: 0,
+            explanation: "Prof. Dr. Soepomo menekankan teori integralistik dengan asas: Persatuan, Kekeluargaan, Keseimbangan Lahir Batin, Musyawarah, dan Keadilan Rakyat."
+          },
+          {
+            id: "cat2-500",
+            points: 500,
+            question: "Pada tanggal berapakah Panitia Sembilan berhasil menyepakati rancangan Pembukaan UUD yang kemudian dinamakan Piagam Jakarta?",
+            options: [
+              "1 Juni 1945",
+              "22 Juni 1945",
+              "10 Juli 1945",
+              "17 Agustus 1945"
+            ],
+            answer: 1,
+            explanation: "Piagam Jakarta (Jakarta Charter) yang memuat rumusan awal Pancasila ditandatangani oleh Panitia Sembilan pada 22 Juni 1945."
+          }
+        ]
+      },
+      {
+        category: "PPKI & Kemerdekaan",
+        questions: [
+          {
+            id: "cat3-100",
+            points: 100,
+            question: "Mengapa Jepang membubarkan BPUPKI dan menggantinya dengan PPKI pada 7 Agustus 1945?",
+            options: [
+              "Karena tugas BPUPKI telah selesai menyusun rancangan dasar negara & UUD",
+              "Karena Jepang merasa tidak dibantu dalam perang",
+              "Karena ada pemberontakan di Indonesia Timur",
+              "Karena BPUPKI tidak menghasilkan kesepakatan"
+            ],
+            answer: 0,
+            explanation: "BPUPKI dibubarkan karena tugasnya menyelidiki persiapan kemerdekaan dinilai sudah selesai. PPKI dibentuk untuk langkah administratif pemindahan kekuasaan."
+          },
+          {
+            id: "cat3-200",
+            points: 200,
+            question: "Peristiwa pengeboman kota Nagasaki pada 9 Agustus 1945 memicu perubahan drastis dalam sejarah perjuangan bangsa Indonesia berupa...",
+            options: [
+              "Dibentuknya BPUPKI",
+              "Jepang menyerah tanpa syarat kepada Sekutu pada 14 Agustus 1945",
+              "Pemerintah Jepang melarang pengibaran bendera Merah Putih",
+              "Mohammad Hatta pergi ke Vietnam sendirian"
+            ],
+            answer: 1,
+            explanation: "Hancurnya Hiroshima dan Nagasaki melumpuhkan kekuatan militer Kekaisaran Jepang, sehingga mereka terpaksa menyerah tanpa syarat pada 14 Agustus 1945."
+          },
+          {
+            id: "cat3-300",
+            points: 300,
+            question: "Siapakah pihak yang menyampaikan aspirasi keberatan dari perwakilan umat Kristen/Katolik Indonesia Timur mengenai kalimat sila pertama Piagam Jakarta?",
+            options: [
+              "Ki Bagus Hadikusumo",
+              "Opsir Kaigun (Angkatan Laut Jepang)",
+              "Jenderal Terauchi",
+              "Wikana dan Chairul Saleh"
+            ],
+            answer: 1,
+            explanation: "Opsir Kaigun menemui Mohammad Hatta mengabarkan keberatan tokoh Indonesia Timur agar negara baru ini tidak pecah."
+          },
+          {
+            id: "cat3-400",
+            points: 400,
+            question: "Sebutkan nama-nama tokoh perwakilan Islam yang diajak rapat terbatas oleh Moh. Hatta pada pagi hari 18 Agustus 1945 sebelum Sidang PPKI dimulai!",
+            options: [
+              "Ki Bagus Hadikusumo, Wahid Hasyim, Kasman Singodimedjo, Teuku Mohammad Hasan",
+              "dr. Radjiman, R.P. Soeroso, Soepomo, Muhammad Yamin",
+              "Siti Sukaptinah, Maria Ullfah, Wikana, Khairul",
+              "Soekarno, Hatta, Achmad Soebardjo, Sayuti Melik"
+            ],
+            answer: 0,
+            explanation: "Hatta mengumpulkan Ki Bagus Hadikusumo, Wahid Hasyim, Kasman Singodimedjo, dan Teuku Mohammad Hasan untuk bermufakat demi keutuhan persatuan nasional."
+          },
+          {
+            id: "cat3-500",
+            points: 500,
+            question: "Manakah dari keputusan berikut yang merupakan hasil resmi Sidang PPKI pada tanggal 18 Agustus 1945?",
+            options: [
+              "Menetapkan Pancasila, menetapkan batas wilayah negara, membubarkan KNIP",
+              "Mengesahkan UUD 1945, memilih Presiden & Wapres, membentuk KNIP",
+              "Membentuk MPR, menunjuk Mr. Muhammad Yamin sebagai Wapres, mendirikan PNI",
+              "Membuat Piagam Jakarta, memilih dr. Radjiman sebagai presiden pertama"
+            ],
+            answer: 1,
+            explanation: "Sidang PPKI 18 Agustus 1945 berhasil menetapkan keputusan penting: Mengesahkan UUD 1945 (di dalamnya ada Pancasila sah), menetapkan Soekarno-Hatta sebagai Presiden/Wapres, dan membentuk KNIP."
+          }
+        ]
+      },
+      {
+        category: "Karakter & Gen Z",
+        questions: [
+          {
+            id: "cat4-100",
+            points: 100,
+            question: "Menolak menyebarkan berita bohong (hoaks) dan menjaga kerahasiaan data pribadi di internet merupakan implementasi pilar karakter...",
+            options: [
+              "Integritas & Kejujuran",
+              "Gotong Royong & Solidaritas",
+              "Semangat Pantang Menyerah",
+              "Nasionalisme Sempit"
+            ],
+            answer: 0,
+            explanation: "Integritas di dunia digital tercermin dari kejujuran menyaring berita (anti hoaks), menolak plagiarisme, serta menghargai privasi data pribadi orang lain."
+          },
+          {
+            id: "cat4-200",
+            points: 200,
+            question: "Sebagai Gen Z, kita harus membentengi diri dari arus globalisasi negatif. Pancasila harus diposisikan sebagai...",
+            options: [
+              "Mesin pencari otomatis",
+              "Digital Filter (Penyaring Digital) kompas moral",
+              "Alat pembuat konten viral",
+              "Sistem keamanan gawai (antivirus)"
+            ],
+            answer: 1,
+            explanation: "Pancasila berperan sebagai penyaring digital (digital filter) agar generasi muda tetap memiliki jati diri kuat, berakhlak mulia, dan toleran."
+          },
+          {
+            id: "cat4-300",
+            points: 300,
+            question: "Sikap nasionalisme yang sempit atau menganggap bangsa sendiri paling unggul secara berlebihan sambil merendahkan bangsa lain disebut...",
+            options: [
+              "Patriotisme tanpa pamrih",
+              "Chauvinisme",
+              "Integritas global",
+              "Solidaritas digital"
+            ],
+            answer: 1,
+            explanation: "Chauvinisme adalah rasa cinta tanah air yang sempit dan berlebihan. Para pendiri negara berwawasan luas dan menjauhi paham chauvinisme ini."
+          },
+          {
+            id: "cat4-400",
+            points: 400,
+            question: "Menghindari debat kusir atau komentar toksik (toxic comment) di media sosial merupakan bentuk penyaringan karakter era digital dari pengamalan sila ke...",
+            options: [
+              "Sila ke-1 (Ketuhanan Yang Maha Esa)",
+              "Sila ke-2 (Kemanusiaan yang Adil dan Beradab)",
+              "Sila ke-4 (Kerakyatan yang Dipimpin oleh Hikmat...)",
+              "Sila ke-5 (Keadilan Sosial)"
+            ],
+            answer: 2,
+            explanation: "Sila ke-4 mengajarkan musyawarah dan menghargai pendapat. Di media sosial, hal ini diaktualisasikan dengan tidak melakukan debat kusir/komentar toksik."
+          },
+          {
+            id: "cat4-500",
+            points: 500,
+            question: "Menggunakan media sosial untuk menggalang donasi kemanusiaan atau membantu menjelaskan pelajaran yang sulit kepada teman online adalah bentuk aktualisasi nilai...",
+            options: [
+              "Semangat Pantang Menyerah",
+              "Gotong Royong & Solidaritas",
+              "Integritas & Kedisiplinan",
+              "Kemandirian Belajar"
+            ],
+            answer: 1,
+            explanation: "Gotong royong di era digital tidak terbatas pada fisik, namun juga bisa berkolaborasi positif secara daring untuk membantu sesama yang kesulitan."
+          }
+        ]
+      }
+    ];
+
+    // Additional dynamic rapid-fire buzzer questions
+    const buzzerQuestions = [
+      { q: "Siapa ketua utama dari BPUPKI?", cat: "BPUPKI" },
+      { q: "Sebutkan tanggal ditandatanganinya rancangan Piagam Jakarta!", cat: "Piagam Jakarta" },
+      { q: "Pancasila secara resmi disahkan oleh PPKI pada tanggal berapa?", cat: "PPKI" },
+      { q: "Di kota manakah kota Hiroshima dan Nagasaki berada?", cat: "Sejarah Dunia" },
+      { q: "Sila ke-3 Pancasila berbunyi tentang...", cat: "Dasar Negara" },
+      { q: "Chauvinisme artinya apa?", cat: "Karakter Bangsa" },
+      { q: "Sebutkan salah satu pilar nilai Pancasila yang diuji di dunia maya!", cat: "Gen Z" },
+      { q: "Apa nama kementerian/istilah jepang untuk badan penyelidik BPUPKI?", cat: "Istilah Sejarah" },
+      { q: "Berapa orang tokoh perempuan dalam tim anggota BPUPKI?", cat: "Sejarah BPUPKI" },
+      { q: "Apakah kepanjangan dari KNIP?", cat: "PPKI & UUD" },
+      { q: "Menghormati teman beribadah adalah wujud pengamalan sila ke-...", cat: "Sila 1" },
+      { q: "Tidak melakukan cyberbullying adalah pengamalan sila ke-...", cat: "Sila 2" },
+      { q: "Penyaring pengaruh negatif internet dinamakan apa?", cat: "Digital Filter" }
+    ];
+
+    const wheelScenarios = [
+      { title: "Kasus Perundungan Siber", scenario: "Ada teman sekelas yang diejek di grup WhatsApp karena nilai ulangannya jelek. Sebagai perwujudan Sila ke-2, apa tindakan konkret kelompok kalian?" },
+      { title: "Menghadapi Berita Hoaks", scenario: "Sebuah pesan berantai menyebarkan kabar bohong bahwa sekolah akan libur mendadak karena ada demo. Kelompok harus menjelaskan bagaimana menyaring berita ini secara bijak." },
+      { title: "Plagiarisme Tugas Sekolah", scenario: "Temanmu menyalin tugas karya ilmiah di internet secara mentah-mentah tanpa mencantumkan sumber. Bagaimana mengedukasinya berdasarkan nilai Integritas?" },
+      { title: "Kolaborasi Lintas Suku", scenario: "Sekolah mengadakan festival budaya nusantara, tetapi kelompokmu mendapat bagian mempromosikan budaya daerah lain yang kurang populer. Apa sikap positif kalian?" },
+      { title: "Aksi Solidaritas Online", scenario: "Ada musibah banjir bandang di wilayah tetangga. Rancang sebuah konsep kampanye gotong royong digital yang kreatif dalam waktu 1 menit!" },
+      { title: "Etika Mengkritik Pemerintah", scenario: "Kritik di media sosial terkadang kasar dan penuh makian. Bagaimana seharusnya Gen Z menyampaikan kritik yang sesuai dengan karakter sopan santun Pancasila?" }
+    ];
+
+    // 2. STATE MANAGEMENT
+    let teamCount = 2;
+    let teams = [];
+    let activeTeamIndex = 0;
+    let answeredQuestions = new Set();
+    let currentQuestion = null;
+    let timerInterval = null;
+    let activeView = 'jeopardy';
+    
+    // Buzzer Specific States
+    let isBuzzerLocked = false;
+    let selectedWheelScenario = null;
+    let currentBuzzerQuestion = null;
+    let buzzerTimerInterval = null;
+    let buzzerTimeLeft = 10;
+    let buzzerPhase = 'idle'; // 'idle', 'thinking', 'answering'
+    let buzzerActiveTeam = null;
+
+    // 3. INITIALIZE THE SETUP
+    window.onload = function() {
+      setTeamCount(2);
+      lucide.createIcons();
+    };
+
+    function setTeamCount(count) {
+      playSound('click');
+      teamCount = count;
+      
+      // Update buttons style
+      for (let i = 2; i <= 4; i++) {
+        const btn = document.getElementById(`btn-teams-${i}`);
+        if (i === count) {
+          btn.classList.add('border-red-500', 'text-white');
+          btn.classList.remove('border-gray-800', 'text-gray-400');
+        } else {
+          btn.classList.remove('border-red-500', 'text-white');
+          btn.classList.add('border-gray-800', 'text-gray-400');
+        }
+      }
+
+      // Generate inputs
+      const container = document.getElementById('team-names-container');
+      container.innerHTML = '';
+      
+      const defaultNames = ["Tim Garuda 🦅", "Tim Bhinneka 🤝", "Tim Merah Putih 🇮🇩", "Tim Khatulistiwa 🗺️"];
+      const colors = ["bg-red-600", "bg-amber-500", "bg-emerald-600", "bg-blue-600"];
+
+      for (let i = 0; i < count; i++) {
+        container.innerHTML += `
+          <div>
+            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Nama Tim ${i+1}:</label>
+            <div class="flex gap-2">
+              <span class="w-10 h-10 rounded-lg ${colors[i]} flex items-center justify-center font-bold text-white text-sm">${String.fromCharCode(65 + i)}</span>
+              <input type="text" id="input-team-${i}" value="${defaultNames[i]}" class="flex-grow bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-amber-500">
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function startGame() {
+      playSound('victory');
+      teams = [];
+      const colors = ["#dc2626", "#f59e0b", "#059669", "#2563eb"];
+      const bgClasses = ["bg-red-600/10", "bg-amber-500/10", "bg-emerald-600/10", "bg-blue-600/10"];
+      const borderClasses = ["border-red-600/30", "border-amber-500/30", "border-emerald-600/30", "border-blue-600/30"];
+      const hoverClasses = ["hover:bg-red-600", "hover:bg-amber-500", "hover:bg-emerald-600", "hover:bg-blue-600"];
+
+      for (let i = 0; i < teamCount; i++) {
+        const nameVal = document.getElementById(`input-team-${i}`).value.trim() || `Tim ${String.fromCharCode(65 + i)}`;
+        teams.push({
+          id: i,
+          name: nameVal,
+          score: 0,
+          color: colors[i],
+          bgClass: bgClasses[i],
+          borderClass: borderClasses[i],
+          hoverClass: hoverClasses[i]
+        });
+      }
+
+      document.getElementById('setup-screen').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
+      document.getElementById('scoreboard').classList.remove('hidden');
+
+      activeTeamIndex = 0;
+      buildJeopardyBoard();
+      updateScoreboard();
+      buildBuzzerDuel();
+      drawWheel();
+      lucide.createIcons();
+    }
+
+    // 4. VIEW CONTROLLERS
+    function switchView(viewName) {
+      playSound('click');
+      activeView = viewName;
+
+      // Clean up buzzer timers if leaving buzzer view
+      if (viewName !== 'buzzer') {
+        clearInterval(buzzerTimerInterval);
+      }
+
+      // Update Tabs styling
+      const views = ['jeopardy', 'buzzer', 'wheel'];
+      views.forEach(v => {
+        const tabBtn = document.getElementById(`tab-${v}`);
+        const viewEl = document.getElementById(`view-${v}`);
+        
+        if (v === viewName) {
+          tabBtn.className = "px-5 py-3 rounded-xl bg-red-600 text-white font-bold text-sm flex items-center gap-2 transition shadow-lg shadow-red-900/20";
+          viewEl.classList.remove('hidden');
+        } else {
+          tabBtn.className = "px-5 py-3 rounded-xl bg-gray-900 text-gray-400 font-semibold text-sm flex items-center gap-2 hover:bg-gray-800 transition";
+          viewEl.classList.add('hidden');
+        }
+      });
+
+      if (viewName === 'wheel') {
+        drawWheel();
+      }
+    }
+
+    function updateScoreboard() {
+      const activeTeam = teams[activeTeamIndex];
+      document.getElementById('active-team-banner').textContent = activeTeam.name;
+      document.getElementById('active-team-banner').style.color = activeTeam.color;
+
+      const scContainer = document.getElementById('scoreboard-teams');
+      scContainer.innerHTML = '';
+
+      teams.forEach((t, idx) => {
+        const isCurrent = idx === activeTeamIndex;
+        scContainer.innerHTML += `
+          <div class="flex items-center gap-2 px-4 py-2 rounded-xl border transition ${isCurrent ? 'bg-gray-900 border-amber-500 ring-2 ring-amber-500/20' : 'bg-gray-900/50 border-gray-800'}">
+            <span class="w-3.5 h-3.5 rounded-full" style="background-color: ${t.color}"></span>
+            <div class="text-left">
+              <span class="block text-xs font-bold text-gray-200">${t.name}</span>
+              <span class="block text-sm font-black text-white" id="score-val-${t.id}">${t.score} Pts</span>
+            </div>
+            
+            <!-- Quick adjustment buttons for teachers -->
+            <div class="flex flex-col ml-3 gap-0.5">
+              <button onclick="adjustScore(${t.id}, 50)" class="p-0.5 hover:bg-gray-800 text-gray-400 hover:text-white rounded text-[10px] font-bold">+</button>
+              <button onclick="adjustScore(${t.id}, -50)" class="p-0.5 hover:bg-gray-800 text-gray-400 hover:text-white rounded text-[10px] font-bold">-</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function adjustScore(teamId, amount) {
+      playSound('click');
+      const team = teams.find(t => t.id === teamId);
+      if (team) {
+        team.score = Math.max(0, team.score + amount);
+        updateScoreboard();
+        checkGameCompletion();
+      }
+    }
+
+    function nextTurn() {
+      activeTeamIndex = (activeTeamIndex + 1) % teams.length;
+      updateScoreboard();
+    }
+
+    // 5. JEOPARDY CORE LOGIC
+    function buildJeopardyBoard() {
+      const grid = document.getElementById('jeopardy-grid');
+      grid.innerHTML = '';
+
+      jeopardyData.forEach((col, colIdx) => {
+        // Create category column container
+        let columnHTML = `
+          <div class="bg-gray-950 p-4 rounded-2xl border border-gray-800 space-y-4 flex flex-col">
+            <div class="text-center pb-2 border-b border-gray-800 min-h-[60px] flex items-center justify-center">
+              <h4 class="font-extrabold text-sm text-gray-100 tracking-tight leading-tight uppercase heading-font">${col.category}</h4>
+            </div>
+            <div class="space-y-3 flex-grow flex flex-col justify-between">
+        `;
+
+        col.questions.forEach((q) => {
+          const isAnswered = answeredQuestions.has(q.id);
+          columnHTML += `
+            <button 
+              id="btn-q-${q.id}"
+              onclick="openQuestion('${colIdx}', '${q.id}')"
+              ${isAnswered ? 'disabled' : ''}
+              class="w-full py-4 rounded-xl font-black text-lg transition flex flex-col items-center justify-center border ${
+                isAnswered 
+                  ? 'bg-gray-900/40 border-gray-900 text-gray-700 cursor-not-allowed line-through' 
+                  : 'bg-gray-900 hover:bg-gray-850 text-amber-400 border-gray-800 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-950/10 hover:scale-[1.02]'
+              }"
+            >
+              <span>${q.points}</span>
+              <span class="text-[9px] text-gray-500 font-semibold tracking-widest mt-0.5">POIN</span>
+            </button>
+          `;
+        });
+
+        columnHTML += `</div></div>`;
+        grid.innerHTML += columnHTML;
+      });
+    }
+
+    // 6. QUESTION DIALOG/MODAL ACTIONS
+    function openQuestion(colIdx, qId) {
+      playSound('click');
+      const category = jeopardyData[colIdx];
+      const q = category.questions.find(item => item.id === qId);
+      currentQuestion = q;
+
+      // Update Modal Contents
+      document.getElementById('modal-category').textContent = category.category;
+      document.getElementById('modal-points').textContent = `NILAI: ${q.points} POIN`;
+      document.getElementById('modal-question-text').textContent = q.question;
+
+      const optionsBox = document.getElementById('modal-options');
+      optionsBox.innerHTML = '';
+
+      q.options.forEach((opt, index) => {
+        optionsBox.innerHTML += `
+          <button 
+            onclick="checkAnswer(${index})"
+            id="opt-btn-${index}"
+            class="p-4 rounded-2xl bg-gray-950 border border-gray-800 text-left hover:border-amber-500 text-sm font-semibold hover:bg-gray-900 transition flex gap-3 items-center group active:scale-[0.99]"
+          >
+            <span class="w-7 h-7 rounded-lg bg-gray-900 border border-gray-700 flex items-center justify-center font-bold text-xs text-amber-400 group-hover:bg-amber-500 group-hover:text-gray-950">${String.fromCharCode(65 + index)}</span>
+            <span class="text-gray-300 group-hover:text-white">${opt}</span>
+          </button>
+        `;
+      });
+
+      // Reset Modal State
+      document.getElementById('modal-explanation-box').classList.add('hidden');
+      document.getElementById('question-modal').classList.remove('hidden');
+
+      // Start Countdown Timer
+      startQuestionTimer(30);
+    }
+
+    function startQuestionTimer(seconds) {
+      clearInterval(timerInterval);
+      let timeLeft = seconds;
+      const timerEl = document.getElementById('modal-timer');
+      timerEl.textContent = `${timeLeft}s`;
+      timerEl.classList.remove('text-red-500');
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = `${timeLeft}s`;
+
+        if (timeLeft <= 5) {
+          timerEl.classList.add('text-red-500');
+        }
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          playSound('wrong');
+          revealCorrectAnswer(-1); // No option chosen
+        }
+      }, 1000);
+    }
+
+    function checkAnswer(selectedIndex) {
+      clearInterval(timerInterval);
+      
+      const isCorrect = selectedIndex === currentQuestion.answer;
+      
+      revealCorrectAnswer(selectedIndex);
+
+      const activeTeam = teams[activeTeamIndex];
+      
+      if (isCorrect) {
+        playSound('correct');
+        activeTeam.score += currentQuestion.points;
+      } else {
+        playSound('wrong');
+        activeTeam.score = Math.max(0, activeTeam.score - currentQuestion.points);
+      }
+
+      // Mark as answered
+      answeredQuestions.add(currentQuestion.id);
+      buildJeopardyBoard();
+      updateScoreboard();
+    }
+
+    function revealCorrectAnswer(selectedIndex) {
+      const correctIdx = currentQuestion.answer;
+      
+      // Highlight Buttons
+      for (let i = 0; i < 4; i++) {
+        const btn = document.getElementById('opt-btn-' + i);
+        if (!btn) continue;
+        btn.disabled = true; // Block further taps
+
+        if (i === correctIdx) {
+          // Right answer
+          btn.className = "p-4 rounded-2xl bg-emerald-950/40 border-2 border-emerald-500 text-left text-sm font-semibold flex gap-3 items-center";
+          btn.querySelector('span').className = "w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-xs text-white";
+        } else if (i === selectedIndex) {
+          // Wrong answer chosen by user
+          btn.className = "p-4 rounded-2xl bg-rose-950/40 border-2 border-rose-500 text-left text-sm font-semibold flex gap-3 items-center";
+          btn.querySelector('span').className = "w-7 h-7 rounded-lg bg-rose-500 flex items-center justify-center font-bold text-xs text-white";
+        } else {
+          // Neutral faded
+          btn.className = "p-4 rounded-2xl bg-gray-950 border border-gray-900 text-left text-sm font-semibold flex gap-3 items-center opacity-40";
+        }
+      }
+
+      // Display Explanation
+      document.getElementById('modal-explanation-text').textContent = currentQuestion.explanation;
+      document.getElementById('modal-explanation-box').classList.remove('hidden');
+    }
+
+    // Teacher overrides points manually from inside modal
+    function overridePoint(isAdd) {
+      playSound('click');
+      const activeTeam = teams[activeTeamIndex];
+      if (isAdd) {
+        activeTeam.score += currentQuestion.points;
+      } else {
+        activeTeam.score = Math.max(0, activeTeam.score - currentQuestion.points);
+      }
+      updateScoreboard();
+      
+      // Visual feedback in modal
+      document.getElementById('modal-points').textContent = `MANUAL OVERRIDE: ${isAdd ? 'Poin Ditambahkan!' : 'Poin Dikurangi!'}`;
+    }
+
+    function closeQuestionModal() {
+      playSound('click');
+      clearInterval(timerInterval);
+      document.getElementById('question-modal').classList.add('hidden');
+      
+      // Auto cycle turn
+      nextTurn();
+      checkGameCompletion();
+    }
+
+    function checkGameCompletion() {
+      // Check if all questions are answered or if teacher wants to end
+      const totalQuestionsCount = jeopardyData.reduce((acc, cat) => acc + cat.questions.length, 0);
+      
+      if (answeredQuestions.size >= totalQuestionsCount) {
+        triggerVictory();
+      }
+    }
+
+    function triggerVictory() {
+      playSound('victory');
+      
+      // Sort teams to find winner
+      const sortedTeams = [...teams].sort((a, b) => b.score - a.score);
+      const winner = sortedTeams[0];
+
+      document.getElementById('victory-team-name').textContent = winner.name;
+      document.getElementById('victory-team-score').textContent = `Skor Akhir: ${winner.score} Poin`;
+      document.getElementById('victory-modal').classList.remove('hidden');
+    }
+
+    function resetGame() {
+      playSound('click');
+      answeredQuestions.clear();
+      currentQuestion = null;
+      isBuzzerLocked = false;
+      selectedWheelScenario = null;
+      clearInterval(buzzerTimerInterval);
+      buzzerPhase = 'idle';
+      
+      document.getElementById('victory-modal').classList.add('hidden');
+      document.getElementById('game-screen').classList.add('hidden');
+      document.getElementById('scoreboard').classList.add('hidden');
+      document.getElementById('setup-screen').classList.remove('hidden');
+      
+      switchView('jeopardy');
+    }
+
+    // 7. BUZZER ARENA LOGIC
+    function buildBuzzerDuel() {
+      const container = document.getElementById('buzzers-grid');
+      container.innerHTML = '';
+
+      // Generate touch regions for each active team
+      teams.forEach((t) => {
+        container.innerHTML += `
+          <button 
+            id="buzzer-btn-${t.id}"
+            onclick="pressBuzzer(${t.id})"
+            class="flex flex-col items-center justify-center rounded-3xl p-6 border transition-all duration-300 relative overflow-hidden group select-none active:scale-[0.97] ${t.bgClass} ${t.borderClass} ${t.hoverClass}"
+          >
+            <!-- Glowing circle -->
+            <div class="w-32 h-32 rounded-full flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-105" style="background-color: ${t.color}">
+              <i data-lucide="zap" class="w-16 h-16 text-white group-active:animate-ping"></i>
+            </div>
+            
+            <div class="mt-4 text-center">
+              <h4 class="font-extrabold text-lg text-white heading-font">${t.name}</h4>
+              <p class="text-xs text-gray-400 font-semibold mt-1">TEPUK BUZZER!</p>
+            </div>
+
+            <!-- Lock Indicator Overlay -->
+            <div id="buzzer-lock-overlay-${t.id}" class="hidden absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center">
+              <div class="bg-gray-950/90 border border-red-500 rounded-2xl px-6 py-3 font-extrabold text-sm text-red-500 tracking-wider heading-font animate-pulse">
+                TERKUNCI!
+              </div>
+            </div>
+          </button>
+        `;
+      });
+    }
+
+    // Trigger Buzzer Question & 10s Timer
+    function triggerBuzzerQuestion() {
+      playSound('click');
+      clearInterval(buzzerTimerInterval);
+      resetBuzzerVisuals();
+
+      // Pick a random buzzer question
+      const randomIdx = Math.floor(Math.random() * buzzerQuestions.length);
+      currentBuzzerQuestion = buzzerQuestions[randomIdx];
+
+      // Update Question Card Text & Category
+      document.getElementById('buzzer-question-category').textContent = `KATEGORI: ${currentBuzzerQuestion.cat}`;
+      document.getElementById('buzzer-question-text').textContent = currentBuzzerQuestion.q;
+
+      // Reset & Start 10s thinking timer
+      buzzerTimeLeft = 10;
+      buzzerPhase = 'thinking';
+      document.getElementById('buzzer-timer').textContent = `${buzzerTimeLeft}s`;
+      document.getElementById('buzzer-timer').classList.remove('text-emerald-400');
+      document.getElementById('buzzer-timer').classList.add('text-red-400');
+
+      document.getElementById('buzzer-status').textContent = "BACA SOAL... SIAP SANGGUP TEPUK BEL!";
+      document.getElementById('buzzer-status').className = "text-xs font-extrabold text-amber-400 ml-2";
+
+      buzzerTimerInterval = setInterval(() => {
+        buzzerTimeLeft--;
+        document.getElementById('buzzer-timer').textContent = `${buzzerTimeLeft}s`;
+
+        if (buzzerTimeLeft <= 0) {
+          clearInterval(buzzerTimerInterval);
+          playSound('wrong');
+          buzzerPhase = 'idle';
+          document.getElementById('buzzer-status').textContent = "WAKTU BERPIKIR HABIS! BEL RESET UTK SOAL BARU.";
+          document.getElementById('buzzer-status').className = "text-xs font-extrabold text-red-500 ml-2";
+          lockAllBuzzers();
+        }
+      }, 1000);
+    }
+
+    function pressBuzzer(teamId) {
+      // Only allow buzzer hits during 'thinking' phase (active question)
+      if (buzzerPhase !== 'thinking' || isBuzzerLocked) return;
+      
+      clearInterval(buzzerTimerInterval); // Stop thinking countdown
+      isBuzzerLocked = true;
+      playSound('buzzer');
+
+      buzzerActiveTeam = teams.find(t => t.id === teamId);
+      buzzerPhase = 'answering';
+
+      // Update Status Header & Timer Indicator for Answering phase
+      const statusEl = document.getElementById('buzzer-status');
+      statusEl.textContent = `${buzzerActiveTeam.name} SEGERA JAWAB SEKARANG!`;
+      statusEl.className = "text-xs font-extrabold text-yellow-400 ml-2";
+
+      // Show Teacher quick scoring controller
+      document.getElementById('buzzer-target-team-text').textContent = `Tim Menjawab: ${buzzerActiveTeam.name}`;
+      document.getElementById('buzzer-score-controls').classList.remove('hidden');
+      document.getElementById('buzzer-score-controls').classList.add('flex');
+
+      // Lock other buttons visually
+      teams.forEach(t => {
+        if (t.id !== teamId) {
+          document.getElementById(`buzzer-lock-overlay-${t.id}`).classList.remove('hidden');
+        } else {
+          // Highlight team buzzer that succeeded
+          const btn = document.getElementById(`buzzer-btn-${t.id}`);
+          btn.classList.add('ring-4', 'ring-yellow-400', 'scale-[1.03]');
+        }
+      });
+
+      // Start 10-second Countdown to actually answer aloud in front of board
+      buzzerTimeLeft = 10;
+      document.getElementById('buzzer-timer').textContent = `${buzzerTimeLeft}s`;
+      document.getElementById('buzzer-timer').classList.remove('text-red-400');
+      document.getElementById('buzzer-timer').classList.add('text-emerald-400');
+
+      buzzerTimerInterval = setInterval(() => {
+        buzzerTimeLeft--;
+        document.getElementById('buzzer-timer').textContent = `${buzzerTimeLeft}s`;
+
+        if (buzzerTimeLeft <= 0) {
+          clearInterval(buzzerTimerInterval);
+          playSound('wrong');
+          document.getElementById('buzzer-status').textContent = `WAKTU MENJAWAB ${buzzerActiveTeam.name} HABIS!`;
+          document.getElementById('buzzer-status').className = "text-xs font-extrabold text-rose-500 ml-2";
+          // Deduct penalty automatic or teacher click
+          awardBuzzerPoints(false);
+        }
+      }, 1000);
+    }
+
+    function awardBuzzerPoints(isCorrect) {
+      clearInterval(buzzerTimerInterval);
+      playSound('click');
+
+      if (buzzerActiveTeam) {
+        if (isCorrect) {
+          playSound('correct');
+          buzzerActiveTeam.score += 100;
+        } else {
+          playSound('wrong');
+          buzzerActiveTeam.score = Math.max(0, buzzerActiveTeam.score - 50);
+        }
+        updateScoreboard();
+      }
+
+      resetBuzzer();
+    }
+
+    function lockAllBuzzers() {
+      teams.forEach(t => {
+        const overlay = document.getElementById(`buzzer-lock-overlay-${t.id}`);
+        if (overlay) overlay.classList.remove('hidden');
+      });
+    }
+
+    function resetBuzzerVisuals() {
+      isBuzzerLocked = false;
+      document.getElementById('buzzer-score-controls').classList.remove('flex');
+      document.getElementById('buzzer-score-controls').classList.add('hidden');
+
+      teams.forEach(t => {
+        const overlay = document.getElementById(`buzzer-lock-overlay-${t.id}`);
+        if (overlay) overlay.classList.add('hidden');
+        
+        const btn = document.getElementById(`buzzer-btn-${t.id}`);
+        if (btn) btn.classList.remove('ring-4', 'ring-yellow-400', 'scale-[1.03]');
+      });
+    }
+
+    function resetBuzzer() {
+      clearInterval(buzzerTimerInterval);
+      resetBuzzerVisuals();
+      buzzerPhase = 'idle';
+      buzzerActiveTeam = null;
+
+      const statusEl = document.getElementById('buzzer-status');
+      statusEl.textContent = "SIAP BERTARUNG! TEKAN RILIS SOAL BARU.";
+      statusEl.className = "text-xs font-extrabold text-emerald-400 ml-2";
+
+      document.getElementById('buzzer-timer').textContent = "10s";
+      document.getElementById('buzzer-timer').classList.remove('text-emerald-400');
+      document.getElementById('buzzer-timer').classList.add('text-red-400');
+    }
+
+    // 8. SPIN THE WHEEL LOGIC (HTML Canvas)
+    let isSpinning = false;
+    let wheelAngle = 0;
+
+    function drawWheel() {
+      const canvas = document.getElementById('wheel-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const segments = wheelScenarios.length;
+      const arc = Math.PI * 2 / segments;
+      const colors = ['#dc2626', '#b91c1c', '#ea580c', '#d97706', '#ca8a04', '#15803d'];
+
+      ctx.clearRect(0, 0, 280, 280);
+      ctx.save();
+      ctx.translate(140, 140);
+      ctx.rotate(wheelAngle);
+
+      for (let i = 0; i < segments; i++) {
+        // Segment Arc
+        ctx.beginPath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, 130, i * arc, (i + 1) * arc);
+        ctx.fill();
+        ctx.stroke();
+
+        // Text labels inside wheel
+        ctx.save();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 9px sans-serif";
+        ctx.textAlign = "right";
+        ctx.translate(0, 0);
+        ctx.rotate(i * arc + arc / 2);
+        
+        // Split long words or just clip
+        let label = wheelScenarios[i].title;
+        ctx.fillText(label, 110, 3);
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    function spinWheel() {
+      if (isSpinning) return;
+      playSound('click');
+      isSpinning = true;
+      document.getElementById('spin-btn').disabled = true;
+
+      const segments = wheelScenarios.length;
+      const arc = Math.PI * 2 / segments;
+      
+      // Determine random spin count and target
+      const randomRotations = 5 + Math.floor(Math.random() * 5); // 5 to 10 full spins
+      const randomSegment = Math.floor(Math.random() * segments);
+      
+      // Calculate target angle to rest on top center pin (offset by -PI/2)
+      const targetAngle = (randomRotations * Math.PI * 2) + (segments - randomSegment) * arc - (Math.PI / 2);
+      
+      const startAngle = wheelAngle;
+      const duration = 3000; // 3 seconds
+      let startTime = null;
+
+      function animateSpin(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = (timestamp - startTime) / duration;
+
+        if (progress < 1) {
+          // Cubic ease-out rotation formula
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          wheelAngle = startAngle + (targetAngle - startAngle) * easeOut;
+          drawWheel();
+          requestAnimationFrame(animateSpin);
+        } else {
+          wheelAngle = targetAngle;
+          drawWheel();
+          isSpinning = false;
+          document.getElementById('spin-btn').disabled = false;
+          
+          // Result triggered
+          selectedWheelScenario = wheelScenarios[randomSegment];
+          displayWheelResult(selectedWheelScenario);
+        }
+      }
+
+      requestAnimationFrame(animateSpin);
+    }
+
+    function displayWheelResult(scen) {
+      playSound('victory');
+      document.getElementById('wheel-result-title').textContent = scen.title;
+      document.getElementById('wheel-result-scenario').textContent = `"${scen.scenario}"`;
+      document.getElementById('wheel-result-box').classList.remove('hidden');
+    }
+
+    function rewardWheelPoints(isSuccess) {
+      playSound('click');
+      if (isSuccess) {
+        playSound('correct');
+        const activeTeam = teams[activeTeamIndex];
+        activeTeam.score += 300; // Bonus points for completing scenario
+        updateScoreboard();
+      }
+      
+      document.getElementById('wheel-result-box').classList.add('hidden');
+      nextTurn();
+    }
+  </script>
+</body>
+</html>
